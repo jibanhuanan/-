@@ -1,0 +1,7 @@
+<html>
+<body>
+<?php
+echo"my name is huanan"
+?>
+</body>
+</html>
