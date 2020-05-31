@@ -1,0 +1,78 @@
+import urllib.request
+import urllib.parse
+import re
+
+'''输入所需要采集数据的网站'''
+url = "https://movie.douban.com/subject/26586766/"
+head = {}
+head['User-Agent'] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063'
+
+response = urllib.request.Request(url, None, head)
+res = urllib.request.urlopen(response)
+'''html = response.read()     ##读取网页内容
+   html = html.decode("utf-8")##以utf-8的形式进行编码，直接打印是二进制
+'''
+html = res.read().decode("utf-8")
+
+'''此处标题'''
+title = re.findall(r'<title>(.*)</title>', html, re.S|re.M)
+
+'''打印'''
+print('电影名称：')
+for tit in title:
+    print(tit)
+'''打印正文'''
+div_adr = r'<div id="info">(.*?)</div>'   #第一级
+div = re.findall(div_adr, html, re.S|re.M)
+for di in div:   
+    #第一列，各个值的分类
+    pl0_adr = r"<span class='p(.*?)<br/>"
+    pl0_value = re.findall(pl0_adr, di, re.S|re.M)
+    for pl0 in pl0_value:
+        pl00_addr = r"l'>(.*?)<span"
+        pl00_value = re.findall(pl00_addr, pl0, re.S|re.M)
+        for pl00 in pl00_value:
+            pl00 = pl00.replace('</span>', '')
+            if len(pl00) < 12:
+                print(pl00, ' '*(12-len(pl00)), end = '')
+            else:
+                print(pl00, end = '')
+        if "href" in pl0:    
+            span00_addr = r'<a .*?>(.*?)</a>'
+            span00_value = re.findall(span00_addr, pl0, re.S|re.M)
+            for span00 in range(len(span00_value)):
+                if span00 == len(span00_value)-1:
+                    print(span00_value[len(span00_value)-1])
+                else:
+                    print(span00_value[span00], end = ' ')
+
+    pl1_adr = r'<span class="p(.*?)r/>'
+    pl1_value = re.findall(pl1_adr, di, re.S|re.M)
+    for pl1 in pl1_value:
+        pl10_addr = r'l">(.*?)</span'
+        pl10_value = re.findall(pl10_addr, pl1, re.S|re.M)
+        for pl10 in pl10_value:
+            if len(pl10) < 12:
+                print(pl10, ' '*(12-len(pl10)), end = '')
+            else:
+                print(pl10, end = '')
+            
+        if "href" in pl1:     
+            span10_addr = r'<a .*?>(.*?)</a>'
+            span10_value = re.findall(span10_addr, pl1, re.S|re.M)
+            for span10 in span10_value:
+                print(span10)
+                
+        elif "property" in pl1:
+            span11_addr = r'<span property.*?>(.*?)</span>'
+            span11_value = re.findall(span11_addr, pl1, re.S|re.M)
+            for span11 in range(len(span11_value)):
+                if span11 == len(span11_value)-1:
+                    print(span11_value[len(span11_value)-1])
+                else:
+                    print(span11_value[span11], end = ' ')
+        else:
+            span12_addr = r'</span>(.*?)<b'
+            span12_value = re.findall(span12_addr, pl1, re.S|re.M)
+            for span12 in span12_value:
+                print(span12)
